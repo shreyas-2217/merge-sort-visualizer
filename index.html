@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Sort - Interactive Step-by-Step Visualizer</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:dark;overflow-anchor:none}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ecf1;line-height:1.45;
+    background:#0a0d12;
+    background-image:radial-gradient(1200px 600px at 20% -10%,rgba(45,212,167,.07),transparent 60%),
+                     radial-gradient(900px 500px at 90% 0%,rgba(167,139,250,.06),transparent 55%);
+    padding:22px 18px 40px;
+  }
+  .app{max-width:1220px;margin:0 auto}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .brand{font-size:30px;font-weight:800;letter-spacing:2px;color:#2dd4a7}
+  .brand em{font-style:normal;color:#a78bfa}
+  .tag{color:#98a2b3;font-size:14px;margin-top:2px}
+  .pill{font-size:12px;font-weight:800;letter-spacing:1.4px;padding:7px 16px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#98a2b3;white-space:nowrap}
+  .pill.ok{color:#2dd4a7;border-color:rgba(45,212,167,.45);background:rgba(45,212,167,.08)}
+  .pill.amber{color:#f5b04c;border-color:rgba(245,176,76,.45);background:rgba(245,176,76,.08)}
+  .pill.plum{color:#a78bfa;border-color:rgba(167,139,250,.5);background:rgba(167,139,250,.08)}
+  .card{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .hidden{display:none !important}
+  .controls{margin-bottom:14px;position:sticky;top:10px;z-index:60;background:rgba(13,17,23,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.55)}
+  .ctl-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ctl-row + .ctl-row{margin-top:12px}
+  button{
+    padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);
+    color:#e8ecf1;font-size:13.5px;cursor:pointer;transition:all .15s
+  }
+  button:hover{border-color:#2dd4a7;color:#2dd4a7}
+  button.primary{background:linear-gradient(135deg,#2dd4a7,#1fa87f);border-color:transparent;color:#06251c;font-weight:800;min-width:112px}
+  button.primary:hover{filter:brightness(1.08);color:#06251c}
+  button:disabled{opacity:.35;cursor:default;border-color:rgba(255,255,255,.14);color:#e8ecf1}
+  input[type=text]{flex:1;min-width:230px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#e8ecf1;font-size:14px}
+  input[type=text]:focus{outline:2px solid #2dd4a7;border-color:transparent}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:rgba(255,255,255,.14);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#2dd4a7;box-shadow:0 0 0 4px rgba(45,212,167,.18);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#2dd4a7;border:none;box-shadow:0 0 0 4px rgba(45,212,167,.18);cursor:pointer}
+  .speed{display:flex;align-items:center;gap:9px;font-size:13px;color:#98a2b3}
+  .speed input{width:104px}
+  #speed-label{min-width:44px;font-variant-numeric:tabular-nums;color:#e8ecf1}
+  .scrub{display:flex;align-items:center;gap:12px;flex:1;min-width:280px}
+  .scrub input{flex:1}
+  #step-label{font-size:13px;color:#98a2b3;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .error{color:#f87171;font-size:13px;min-height:16px}
+  .journey{display:flex;align-items:center;gap:0;height:30px;position:relative;margin-top:12px;border:1px solid rgba(255,255,255,.1);border-radius:999px;overflow:hidden;background:rgba(0,0,0,.25)}
+  .jseg{display:flex;align-items:center;justify-content:center;font-size:10.5px;letter-spacing:1.6px;color:#7d8896;font-weight:700;border-right:1px solid rgba(255,255,255,.1);position:relative;z-index:2}
+  .jseg:last-child{border-right:none}
+  .jfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(245,176,76,.22),rgba(167,139,250,.25),rgba(45,212,167,.3));z-index:1;transition:width .3s}
+  .grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px}
+  .col-main,.col-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+  .card-title{font-size:12.5px;font-weight:800;letter-spacing:2px;color:#aeb8c4}
+  .hint{font-size:12.5px;color:#7d8896;text-align:right}
+  .op-card{border-left:4px solid #f5b04c;transition:border-color .3s}
+  .op-card.plum{border-left-color:#a78bfa}
+  .op-card.ok{border-left-color:#2dd4a7}
+  .op-chip{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1.8px;padding:4px 12px;border-radius:999px;margin-bottom:8px}
+  .op-chip.amber{background:rgba(245,176,76,.14);color:#f5b04c;border:1px solid rgba(245,176,76,.4)}
+  .op-chip.plum{background:rgba(167,139,250,.14);color:#a78bfa;border:1px solid rgba(167,139,250,.4)}
+  .op-chip.ok{background:rgba(45,212,167,.14);color:#2dd4a7;border:1px solid rgba(45,212,167,.4)}
+  .op-title{font-size:25px;font-weight:800;color:#f2f5f8;letter-spacing:.3px;min-height:34px}
+  .op-title .opn{color:#f5b04c}
+  .op-title .opn.a{color:#f5b04c}
+  .op-title .opn.b{color:#2dd4a7}
+  .op-title .opvs{color:#5f6a78;font-size:15px;font-weight:600;margin:0 10px;letter-spacing:2px}
+  .op-sub{color:#b6c0cd;font-size:15.5px;margin-top:7px;line-height:1.5}
+  .why{margin-top:13px;padding:11px 14px;border-radius:12px;background:rgba(45,212,167,.06);border:1px dashed rgba(45,212,167,.4);color:#bfe9db;font-size:14px;line-height:1.55}
+  .why b{color:#2dd4a7}
+  #stage{position:relative;padding-bottom:74px}
+  #bars{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:280px}
+  .bar-col{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:54px;flex:0 0 auto}
+  .bar{width:100%;border-radius:8px 8px 3px 3px;transition:height .3s cubic-bezier(.2,.8,.2,1),background .3s,box-shadow .3s}
+  .bar.idle{background:linear-gradient(180deg,#465364,#333d4a);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  .bar.active{background:linear-gradient(180deg,#f5b04c,#d98f2b);box-shadow:0 0 18px rgba(245,176,76,.35)}
+  .bar.write{background:linear-gradient(180deg,#a78bfa,#7c5cd6);box-shadow:0 0 22px rgba(167,139,250,.5)}
+  .bar.sorted{background:linear-gradient(180deg,#2dd4a7,#189a72);box-shadow:0 0 16px rgba(45,212,167,.28)}
+  .bar-col.writecol .bar{animation:writepulse 1.1s ease-in-out infinite}
+  @keyframes writepulse{0%{box-shadow:0 0 0 0 rgba(167,139,250,.55)}70%{box-shadow:0 0 0 12px rgba(167,139,250,0)}100%{box-shadow:0 0 0 0 rgba(167,139,250,0)}}
+  .bar-val{position:absolute;left:50%;transform:translateX(-50%);font-size:13.5px;font-weight:700;color:#cbd5e1;transition:top .3s,color .3s;font-variant-numeric:tabular-nums}
+  .bar-val.inside{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .bar-col.writecol .bar-val{color:#d6c9ff}
+  .bar-col.sortedcol .bar-val{color:#7ce8cd}
+  .bar-idx{font-size:11px;color:#5f6a78;margin-top:6px;font-variant-numeric:tabular-nums}
+  .bar-col.writecol .bar-idx{color:#a78bfa;font-weight:800}
+  .bracket{position:absolute;border:2px solid #f5b04c;border-top:none;border-radius:0 0 8px 8px;height:12px;display:none}
+  .bracket.teal{border-color:#2dd4a7}
+  .midtick{position:absolute;width:2px;height:16px;background:#a78bfa;display:none;border-radius:2px}
+  .midlab{position:absolute;font-size:10px;font-weight:800;letter-spacing:1px;color:#a78bfa;display:none;transform:translateX(-50%)}
+  .halflab{position:absolute;font-size:10px;font-weight:800;letter-spacing:1.4px;display:none}
+  .halflab.left{color:#f5b04c}
+  .halflab.right{color:#2dd4a7}
+  .sortchip{position:absolute;top:2px;transform:translateX(-50%);font-size:11px;font-weight:800;letter-spacing:1.6px;color:#2dd4a7;background:rgba(45,212,167,.12);border:1px solid rgba(45,212,167,.45);padding:3px 12px;border-radius:999px;display:none}
+  #map{overflow-x:auto}
+  .map-row{display:flex;gap:12px;align-items:center;margin:7px 0}
+  .map-lab{width:30px;flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:1px;color:#5f6a78;text-align:right}
+  .map-strip{display:flex;gap:16px}
+  .map-group{display:flex;gap:3px;padding:5px;border-radius:9px;border:1px dashed rgba(255,255,255,.13)}
+  .map-group.anc{border-style:solid;border-color:rgba(245,176,76,.4);background:rgba(245,176,76,.04)}
+  .map-group.active{border-style:solid;border-color:rgba(167,139,250,.75);background:rgba(167,139,250,.09);box-shadow:0 0 14px rgba(167,139,250,.3)}
+  .map-group.done{border-style:solid;border-color:rgba(45,212,167,.45);background:rgba(45,212,167,.05)}
+  .map-box{min-width:27px;height:29px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border-radius:6px;background:rgba(255,255,255,.055);color:#aeb8c4;font-variant-numeric:tabular-nums;padding:0 3px}
+  .map-group.done .map-box{color:#2dd4a7}
+  .map-group.active .map-box{color:#efeaff}
+  #buffers{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap;min-height:64px}
+  .buf-group{display:flex;flex-direction:column;gap:4px}
+  .buf-label{font-size:10px;font-weight:800;letter-spacing:1.6px;color:#7d8896}
+  .buf-chips{display:flex;gap:5px}
+  .chip{min-width:36px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13.5px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#cbd5e1;font-variant-numeric:tabular-nums;transition:all .2s}
+  .chip.left{background:rgba(245,176,76,.12);border-color:rgba(245,176,76,.45);color:#f5b04c}
+  .chip.right{background:rgba(45,212,167,.1);border-color:rgba(45,212,167,.45);color:#2dd4a7}
+  .chip.ptr{outline:2px solid #a78bfa;outline-offset:2px}
+  .ptr-tag{font-size:11px;font-weight:800;color:#a78bfa;text-align:center;height:15px;letter-spacing:1px}
+  .kchip{font-size:13.5px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.5);border-radius:8px;padding:7px 13px}
+  .buf-placeholder{color:#5f6a78;font-size:13px}
+  .code{font-family:Consolas,'Courier New',monospace;font-size:12.3px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 0;margin-bottom:10px;overflow-x:auto}
+  .code .fn{padding:0 12px 7px;font-weight:800;color:#2dd4a7;font-size:11.5px;letter-spacing:.6px}
+  .cl{padding:2.5px 12px 2.5px 8px;white-space:pre;display:flex;border-radius:6px;margin:0 4px}
+  .cl .ln{width:22px;color:#4d5661;text-align:right;margin-right:10px;flex:0 0 auto;user-select:none}
+  .cl.hl{background:linear-gradient(90deg,rgba(245,176,76,.28),rgba(245,176,76,.12));box-shadow:inset 2px 0 0 #f5b04c}
+  .cl.hl .ln{color:#f5b04c}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px}
+  .stat .v{font-size:23px;font-weight:800;color:#2dd4a7;font-variant-numeric:tabular-nums}
+  .stat .k{font-size:10px;color:#7d8896;letter-spacing:1.4px;margin-top:1px}
+  .legend{display:flex;gap:9px 20px;flex-wrap:wrap;align-items:center;margin-top:16px;padding-top:13px;border-top:1px dashed rgba(255,255,255,.12);font-size:13.5px;color:#98a2b3}
+  .legend .lg{display:flex;align-items:center;gap:7px}
+  .sw{width:14px;height:14px;border-radius:4px;display:inline-block;flex:0 0 auto}
+  .sw.idle{background:linear-gradient(180deg,#465364,#333d4a)}
+  .sw.active{background:linear-gradient(180deg,#f5b04c,#d98f2b)}
+  .sw.write{background:linear-gradient(180deg,#a78bfa,#7c5cd6)}
+  .sw.sorted{background:linear-gradient(180deg,#2dd4a7,#189a72)}
+  #log{position:relative;max-height:300px;overflow-y:auto;font-size:12.8px;display:flex;flex-direction:column;gap:3px;padding-right:4px}
+  #log::-webkit-scrollbar{width:8px}
+  #log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+  .log-e{display:flex;gap:9px;align-items:baseline;padding:5px 9px;border-radius:8px;color:#98a2b3;cursor:pointer;border:1px solid transparent}
+  .log-e:hover{background:rgba(255,255,255,.04)}
+  .log-e .ic{width:18px;text-align:center;flex:0 0 auto;font-weight:800}
+  .log-e .n{color:#4d5661;font-variant-numeric:tabular-nums;flex:0 0 auto;width:30px;text-align:right}
+  .log-e.amber .ic{color:#f5b04c}
+  .log-e.plum .ic{color:#a78bfa}
+  .log-e.ok .ic{color:#2dd4a7}
+  .log-e.cur{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35);color:#e8ecf1;font-weight:600}
+  .overlay{position:fixed;inset:0;background:rgba(4,6,9,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+  .intro{max-width:620px;text-align:center}
+  .intro .brand{font-size:38px}
+  .intro h2{font-size:19px;color:#f2f5f8;font-weight:700;margin:14px 0 12px}
+  .intro p{color:#98a2b3;font-size:15px;line-height:1.65;margin:0 0 10px}
+  .intro p b{color:#e8ecf1}
+  .intro .story{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}
+  .intro .story div{flex:1;min-width:150px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 10px;font-size:13.5px;color:#b6c0cd}
+  .intro .story span{display:block;font-size:22px;margin-bottom:6px}
+  footer{margin-top:18px;color:#5f6a78;font-size:12.5px;text-align:center;line-height:1.7}
+  footer b{color:#98a2b3}
+  @media(max-width:960px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="overlay" id="intro-overlay">
+    <div class="intro">
+      <div class="brand">MERGE <em>SORT</em></div>
+      <h2>New here? Take 20 seconds.</h2>
+      <p>Merge sort sorts a list by <b>splitting it into tiny pieces</b> (a single number is always "sorted"), then <b>merging the pieces back together</b> - each merge picks the smallest front value first, so the result comes out in order.</p>
+      <div class="story">
+        <div><span>&#9986;&#65039;</span><b>SPLIT</b><br>Keep cutting the list in half until every piece holds one number.</div>
+        <div><span>&#129514;</span><b>MERGE</b><br>Pair up the pieces, always taking the smaller front value - like combining two sorted piles of cards.</div>
+        <div><span>&#9989;</span><b>SORTED</b><br>When every piece is merged back, the whole list is in order. Guaranteed.</div>
+      </div>
+      <p>You control the pace: <b>Play</b> runs it, <b>Next / Back</b> move one move at a time, and a friendly card explains every single move in plain words.</p>
+      <button class="primary" id="btn-intro-go" style="margin-top:8px;padding:12px 34px;font-size:15px">Got it - show me &#9654;</button>
+    </div>
+  </div>
+
+  <header class="top">
+    <div>
+      <div class="brand">MERGE <em>SORT</em></div>
+      <div class="tag">Split. Sort the small pieces. Merge them back. Watch every move.</div>
+    </div>
+    <div class="pill" id="phase-pill">READY</div>
+  </header>
+
+  <section class="card controls">
+    <div class="ctl-row">
+      <button id="btn-back" title="Step back (Left arrow)">&#9198; Back</button>
+      <button id="btn-play" class="primary" title="Play / Pause (Space)">&#9654; Play</button>
+      <button id="btn-fwd" title="Step forward (Right arrow)">Next &#9197;</button>
+      <button id="btn-end" title="Jump straight to the finished, sorted array">&#9193; End</button>
+      <div class="speed">
+        <label for="speed">Speed</label>
+        <input type="range" id="speed" min="1" max="8" value="4">
+        <span id="speed-label">1&times;</span>
+      </div>
+      <div class="scrub">
+        <input type="range" id="scrubber" min="0" max="0" value="0">
+        <span id="step-label">Step 0 / 0</span>
+      </div>
+    </div>
+    <div class="journey" id="journey"></div>
+    <div class="ctl-row" id="row-build">
+      <input type="text" id="array-input" value="38, 27, 43, 3, 9, 82, 10" placeholder="e.g. 38, 27, 43, 3, 9, 82, 10">
+      <button id="btn-build">Build array</button>
+      <button id="btn-random">Random</button>
+      <button id="btn-reset">Reset</button>
+      <span id="input-error" class="error"></span>
+      <button id="btn-details" style="margin-left:auto" title="Show or hide the deeper panels">&#128269; Show details</button>
+    </div>
+  </section>
+
+  <section class="card op-card" id="op-card">
+    <span class="op-chip amber" id="op-chip">READY</span>
+    <div class="op-title" id="op-title"></div>
+    <div class="op-sub" id="op-sub"></div>
+    <div class="why" id="op-why"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div class="card-title">THE ARRAY</div>
+      <div class="hint">value on top &middot; index below &middot; bracket shows the piece being solved</div>
+    </div>
+    <div id="stage">
+      <div id="bars"></div>
+      <div class="bracket" id="ov-bracket"></div>
+      <div class="midtick" id="ov-midtick"></div>
+      <div class="midlab" id="ov-midlab">mid</div>
+      <div class="halflab left" id="ov-leftlab"></div>
+      <div class="halflab right" id="ov-rightlab"></div>
+      <div class="sortchip" id="ov-sortchip">&#10003; SORTED</div>
+    </div>
+    <div class="legend">
+      <span class="lg"><i class="sw idle"></i>Grey - waiting</span>
+      <span class="lg"><i class="sw active"></i>Amber - comparing now</span>
+      <span class="lg"><i class="sw write"></i>Purple - just placed</span>
+      <span class="lg"><i class="sw sorted"></i>Green - sorted &#10003;</span>
+    </div>
+  </section>
+
+  <div class="grid hidden" id="details">
+    <div class="col-main">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">SPLIT &amp; MERGE MAP</div>
+          <div class="hint">one row per recursion level &middot; top row = whole array &middot; watch it split, then merge back up</div>
+        </div>
+        <div id="map"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">THE TWO PILES BEING COMBINED</div>
+          <div class="hint">leftarray &middot; rightarray &middot; write pointer k</div>
+        </div>
+        <div id="buffers"><span class="buf-placeholder">The two piles appear here during merge steps.</span></div>
+      </section>
+    </div>
+
+    <div class="col-side">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">PSEUDOCODE</div>
+          <div class="hint">the running line is highlighted</div>
+        </div>
+        <div class="code" id="code-ms"></div>
+        <div class="code" id="code-m"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">STATISTICS</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat"><div class="v" id="st-comp">0</div><div class="k">COMPARISONS</div></div>
+          <div class="stat"><div class="v" id="st-depth">0</div><div class="k">CURRENT DEPTH</div></div>
+          <div class="stat"><div class="v" id="st-maxdepth">0</div><div class="k">MAX DEPTH</div></div>
+          <div class="stat"><div class="v" id="st-size">0</div><div class="k">ELEMENTS (N)</div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">TIMELINE</div>
+          <div class="hint">click any entry to jump there</div>
+        </div>
+        <div id="log"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <b>How to use:</b> Press <b>Play</b> (or Space) and watch, or go one move at a time with <b>Next / Back</b> (&#8592; &#8594;).
+    Type your own numbers at the top and press <b>Build array</b>. <b>Show details</b> reveals the map, piles, pseudocode, statistics and timeline.<br>
+    Colours: grey = waiting &middot; amber = comparing &middot; purple = placing &middot; green = sorted.
+  </footer>
+</div>
+<script>
+'use strict';
+
+/* ============================== state ============================== */
+var steps = [];        // precomputed trace: one entry per animation step
+var nodes = [];        // recursion-tree nodes
+var levels = [];       // node ids grouped by recursion depth
+var firstCombine = 0;  // step index where merging starts
+var cur = 0;
+var playing = false;
+var timer = null;
+var barCols = [];      // live bar columns (updated in place for smooth transitions)
+var BARH = 280;
+
+var CODE_MS = [
+  'algorithm mergesort(x[], l, h)',
+  '  if (l < h) then',
+  '    mid = (l + h) / 2',
+  '    mergesort(x, l, mid)',
+  '    mergesort(x, mid + 1, h)',
+  '    merge(x, l, mid, h)'
+];
+var CODE_M = [
+  'algorithm merge(x[], l, mid, h)',
+  '  leftarray  = x[l .. mid]',
+  '  rightarray = x[mid+1 .. h]',
+  '  i = 0;  j = 0;  k = l',
+  '  while (i < len(leftarray) and j < len(rightarray))',
+  '    if (leftarray[i] <= rightarray[j]) then',
+  '      x[k] = leftarray[i];  i++',
+  '    else',
+  '      x[k] = rightarray[j];  j++',
+  '    k++',
+  '  while (i < len(leftarray)) do      // copy remaining left',
+  '    x[k] = leftarray[i];  i++;  k++',
+  '  while (j < len(rightarray)) do     // copy remaining right',
+  '    x[k] = rightarray[j];  j++;  k++'
+];
+var ICONS = { init:'\u25CF', call:'\u25B6', split:'\u2702', base:'\u2022', buffers:'\u29C9', compare:'\u21C4', write:'\u270D', copy:'\u279C', merged:'\u2713', done:'\u2605' };
+var TONE  = { init:'', call:'amber', split:'amber', base:'ok', buffers:'plum', compare:'amber', write:'plum', copy:'plum', merged:'ok', done:'ok' };
+var SPEEDS = [0.25, 0.45, 0.7, 1, 1.4, 1.9, 2.5, 3.2];
+var BASE_MS = 950;
+
+function $(id) { return document.getElementById(id); }
+
+/* ========================= trace generation ========================= */
+/* One instrumented pass of mergesort records a snapshot of everything at
+   every meaningful moment - the UI is a pure player over this trace.     */
+function buildTrace(input) {
+  steps = [];
+  nodes = [];
+  levels = [];
+  var a = input.slice();
+  var counters = { comp: 0, maxDepth: 0 };
+
+  function snap(s) {
+    s.comp = counters.comp;
+    s.maxDepth = counters.maxDepth;
+    var f = [];
+    for (var q = 0; q < nodes.length; q++) if (nodes[q].done) f.push(q);
+    s.fin = f;
+    steps.push(s);
+  }
+
+  snap({ view: a.slice(), kind: 'init', hl: [], rng: null, sortedUpTo: [],
+         short: 'Array ready - ' + a.length + ' elements',
+         code: null, code2: null, node: 0, buf: null, depth: 0 });
+
+  function mergesort(l, h, depth, nodeId) {
+    counters.maxDepth = Math.max(counters.maxDepth, depth);
+    var node = nodes[nodeId];
+    snap({ view: a.slice(), kind: 'call', hl: [], rng: [l, h], sortedUpTo: [],
+           short: 'mergesort(' + l + ',' + h + ')',
+           code: 0, code2: null, node: nodeId, buf: null, depth: depth });
+
+    if (l >= h) {
+      node.done = true;
+      snap({ view: a.slice(), kind: 'base', hl: [l], rng: [l, h], sortedUpTo: [],
+             short: 'Base case: x[' + l + '] = ' + a[l],
+             code: 1, code2: null, node: nodeId, buf: null, depth: depth });
+      return;
+    }
+
+    var mid = Math.floor((l + h) / 2);
+    snap({ view: a.slice(), kind: 'split', hl: [], rng: [l, h], sortedUpTo: [], mid: mid,
+           short: 'Split [' + l + '..' + h + '] at ' + mid,
+           code: 2, code2: null, node: nodeId, buf: null, depth: depth });
+
+    var leftId = nodes.length; nodes.push({ l: l, h: mid, parent: nodeId, done: false, depth: depth + 1 });
+    var rightId = nodes.length; nodes.push({ l: mid + 1, h: h, parent: nodeId, done: false, depth: depth + 1 });
+    node.children = [leftId, rightId];
+
+    snap({ view: a.slice(), kind: 'split', hl: [], rng: [l, h], sortedUpTo: [], mid: mid,
+           short: 'Recurse left  [' + l + '..' + mid + ']',
+           code: 3, code2: null, node: nodeId, buf: null, depth: depth });
+    mergesort(l, mid, depth + 1, leftId);
+
+    snap({ view: a.slice(), kind: 'split', hl: [], rng: [l, h], sortedUpTo: [], mid: mid,
+           short: 'Recurse right [' + (mid + 1) + '..' + h + ']',
+           code: 4, code2: null, node: nodeId, buf: null, depth: depth });
+    mergesort(mid + 1, h, depth + 1, rightId);
+
+    merge(l, mid, h, depth, nodeId);
+  }
+
+  function merge(l, mid, h, depth, nodeId) {
+    var left = a.slice(l, mid + 1);
+    var right = a.slice(mid + 1, h + 1);
+    snap({ view: a.slice(), kind: 'buffers', hl: [], rng: [l, h], sortedUpTo: [], mid: mid, op2: 'copy',
+           short: 'Buffers for [' + l + '..' + h + ']',
+           code: null, code2: 1, node: nodeId, buf: { left: left.slice(), right: right.slice(), i: 0, j: 0, k: l }, depth: depth });
+
+    var i = 0, j = 0, k = l;
+    snap({ view: a.slice(), kind: 'buffers', hl: [], rng: [l, h], sortedUpTo: [], mid: mid, op2: 'ptr',
+           short: 'i=0, j=0, k=' + l,
+           code: null, code2: 3, node: nodeId, buf: { left: left.slice(), right: right.slice(), i: i, j: j, k: k }, depth: depth });
+
+    while (i < left.length && j < right.length) {
+      counters.comp++;
+      var takeLeft = left[i] <= right[j];
+      snap({ view: a.slice(), kind: 'compare', hl: [], rng: [l, h], sortedUpTo: [], mid: mid,
+             short: left[i] + ' vs ' + right[j],
+             code: null, code2: 5, node: nodeId,
+             buf: { left: left.slice(), right: right.slice(), i: i, j: j, k: k }, depth: depth });
+      if (takeLeft) { a[k] = left[i]; i++; } else { a[k] = right[j]; j++; }
+      snap({ view: a.slice(), kind: 'write', hl: [], rng: [l, h], sortedUpTo: [], mid: mid, writeIdx: k, src: takeLeft ? 'L' : 'R',
+             short: 'x[' + k + '] = ' + a[k],
+             code: null, code2: (takeLeft ? 6 : 8), node: nodeId,
+             buf: { left: left.slice(), right: right.slice(), i: i, j: j, k: k + 1 }, depth: depth });
+      k++;
+    }
+    while (i < left.length) {
+      a[k] = left[i];
+      snap({ view: a.slice(), kind: 'copy', hl: [], rng: [l, h], sortedUpTo: [], mid: mid, writeIdx: k, src: 'L',
+             short: 'Drain x[' + k + '] = ' + a[k],
+             code: null, code2: 10, node: nodeId,
+             buf: { left: left.slice(), right: right.slice(), i: i + 1, j: j, k: k + 1 }, depth: depth });
+      k++; i++;
+    }
+    while (j < right.length) {
+      a[k] = right[j];
+      snap({ view: a.slice(), kind: 'copy', hl: [], rng: [l, h], sortedUpTo: [], mid: mid, writeIdx: k, src: 'R',
+             short: 'Drain x[' + k + '] = ' + a[k],
+             code: null, code2: 12, node: nodeId,
+             buf: { left: left.slice(), right: right.slice(), i: i, j: j + 1, k: k + 1 }, depth: depth });
+      k++; j++;
+    }
+
+    nodes[nodeId].done = true;
+    var sortedMask = [];
+    for (var t = l; t <= h; t++) sortedMask.push(t);
+    snap({ view: a.slice(), kind: 'merged', hl: [], rng: [l, h], sortedUpTo: sortedMask, mid: mid,
+           short: '[' + l + '..' + h + '] sorted \u2713',
+           code: 5, code2: null, node: nodeId, buf: null, depth: depth });
+  }
+
+  nodes.push({ l: 0, h: a.length - 1, parent: null, done: false, depth: 0 });
+  mergesort(0, a.length - 1, 0, 0);
+
+  snap({ view: a.slice(), kind: 'done', hl: [], rng: null,
+         sortedUpTo: a.map(function (_, t) { return t; }),
+         short: 'Done - ' + counters.comp + ' comparisons',
+         code: null, code2: null, node: 0, buf: null, depth: 0 });
+
+  for (var i = 0; i < nodes.length; i++) {
+    var d = nodes[i].depth;
+    (levels[d] = levels[d] || []).push(i);
+  }
+  levels.forEach(function (row) { row.sort(function (p, q) { return nodes[p].l - nodes[q].l; }); });
+
+  firstCombine = 0;
+  for (var s = 0; s < steps.length; s++) if (steps[s].kind === 'buffers') { firstCombine = s; break; }
+  return counters.comp;
+}
+
+/* ============================ static build ============================ */
+function buildBars(n) {
+  var host = $('bars');
+  host.innerHTML = '';
+  barCols = [];
+  for (var idx = 0; idx < n; idx++) {
+    var col = document.createElement('div');
+    col.className = 'bar-col';
+    var bar = document.createElement('div');
+    bar.className = 'bar idle';
+    var idxEl = document.createElement('div');
+    idxEl.className = 'bar-idx';
+    idxEl.textContent = idx;
+    var val = document.createElement('div');
+    val.className = 'bar-val';
+    col.appendChild(bar); col.appendChild(idxEl); col.appendChild(val);
+    host.appendChild(col);
+    barCols.push({ col: col, bar: bar, val: val, idx: idxEl });
+  }
+}
+
+function buildOverlays() {
+  ['ov-bracket', 'ov-midtick', 'ov-midlab', 'ov-leftlab', 'ov-rightlab', 'ov-sortchip'].forEach(function (id) {
+    var e = $(id);
+    e.style.display = 'none';
+    e.classList.remove('teal');
+  });
+}
+
+function buildJourney() {
+  var host = $('journey');
+  host.innerHTML = '';
+  var last = steps.length - 1;
+  var w1 = (firstCombine / last) * 100;
+  var w2 = ((last - 1 - firstCombine) / last) * 100;
+  var w3 = (1 / last) * 100;
+  var segs = [
+    { t: 'DIVIDE', w: w1 },
+    { t: 'COMBINE', w: w2 },
+    { t: '\u2713', w: w3 }
+  ];
+  segs.forEach(function (sg) {
+    var d = document.createElement('div');
+    d.className = 'jseg';
+    d.style.flex = '0 0 ' + sg.w + '%';
+    d.textContent = sg.t;
+    host.appendChild(d);
+  });
+  var fill = document.createElement('div');
+  fill.className = 'jfill';
+  fill.id = 'jfill';
+  host.appendChild(fill);
+}
+
+function buildCodePanels() {
+  function fill(hostId, lines, prefix) {
+    var host = $(hostId);
+    host.innerHTML = '';
+    lines.forEach(function (line, idx) {
+      var d = document.createElement('div');
+      d.className = 'cl';
+      d.id = 'cl-' + prefix + '-' + idx;
+      if (idx === 0) { d.className += ' fn'; d.textContent = line; return; }
+      var n = document.createElement('span');
+      n.className = 'ln';
+      n.textContent = idx;
+      var t = document.createElement('span');
+      t.textContent = line;
+      d.appendChild(n); d.appendChild(t);
+      host.appendChild(d);
+    });
+  }
+  fill('code-ms', CODE_MS, 'ms');
+  fill('code-m', CODE_M, 'm');
+}
+
+/* ============================ rendering ============================ */
+function renderBars() {
+  var s = steps[cur];
+  var view = s.view;
+  var maxv = 1;
+  for (var t = 0; t < view.length; t++) maxv = Math.max(maxv, Math.abs(view[t]));
+  for (var i = 0; i < view.length; i++) {
+    var c = barCols[i];
+    var h = Math.max(8, Math.round(view[i] / maxv * (BARH - 30)));
+    var cls = 'idle';
+    if (s.sortedUpTo.indexOf(i) !== -1) cls = 'sorted';
+    if (s.hl.indexOf(i) !== -1) cls = 'active';
+    if (s.writeIdx === i) cls = 'write';
+    c.bar.className = 'bar ' + cls;
+    c.bar.style.height = h + 'px';
+    c.val.textContent = view[i];
+    var inside = h >= 34;
+    c.val.className = 'bar-val' + (inside ? ' inside' : '');
+    c.val.style.top = (BARH - h + (inside ? 8 : -23)) + 'px';
+    c.col.className = 'bar-col'
+      + (s.writeIdx === i ? ' writecol' : '')
+      + (cls === 'sorted' ? ' sortedcol' : '');
+    c.idx.textContent = i;
+  }
+}
+
+function renderStageOverlays() {
+  var s = steps[cur];
+  var bracket = $('ov-bracket'), midtick = $('ov-midtick'), midlab = $('ov-midlab'),
+      leftlab = $('ov-leftlab'), rightlab = $('ov-rightlab'), chip = $('ov-sortchip');
+  bracket.style.display = 'none'; midtick.style.display = 'none'; midlab.style.display = 'none';
+  leftlab.style.display = 'none'; rightlab.style.display = 'none'; chip.style.display = 'none';
+  var rng = s.rng || (s.kind === 'done' ? [0, barCols.length - 1] : null);
+  if (!rng || !barCols.length) return;
+  var l = rng[0], h = rng[1];
+  var cl = barCols[l].col, cr = barCols[h].col;
+  var x1 = cl.offsetLeft, x2 = cr.offsetLeft + cr.offsetWidth;
+  var mergey = s.kind === 'buffers' || s.kind === 'compare' || s.kind === 'write' || s.kind === 'copy' || s.kind === 'merged';
+
+  bracket.style.display = 'block';
+  bracket.style.left = x1 + 'px';
+  bracket.style.width = (x2 - x1) + 'px';
+  bracket.style.top = (BARH + 34) + 'px';
+  bracket.classList.toggle('teal', s.kind === 'merged' || s.kind === 'done');
+
+  var midX = null;
+  if (s.mid != null && barCols[s.mid + 1]) {
+    var cm = barCols[s.mid].col, cn = barCols[s.mid + 1].col;
+    midX = cm.offsetLeft + cm.offsetWidth + (cn.offsetLeft - cm.offsetLeft - cm.offsetWidth) / 2;
+    midtick.style.display = 'block';
+    midtick.style.left = (midX - 1) + 'px';
+    midtick.style.top = (BARH + 22) + 'px';
+    midlab.style.display = 'block';
+    midlab.style.left = midX + 'px';
+    midlab.style.top = (BARH + 44) + 'px';
+  }
+
+  if (mergey && midX != null) {
+    if (x2 - x1 < 300) {
+      leftlab.style.display = 'block';
+      leftlab.textContent = 'L [' + l + '..' + s.mid + ']  \u00B7  R [' + (s.mid + 1) + '..' + h + ']';
+      leftlab.style.left = ((x1 + x2) / 2) + 'px';
+      leftlab.style.transform = 'translateX(-50%)';
+      leftlab.style.top = (BARH + 58) + 'px';
+    } else {
+      leftlab.style.display = 'block';
+      leftlab.textContent = 'LEFT  [' + l + '..' + s.mid + ']';
+      leftlab.style.left = ((x1 + midX) / 2) + 'px';
+      leftlab.style.transform = 'translateX(-50%)';
+      leftlab.style.top = (BARH + 56) + 'px';
+      rightlab.style.display = 'block';
+      rightlab.textContent = 'RIGHT  [' + (s.mid + 1) + '..' + h + ']';
+      rightlab.style.left = ((midX + x2) / 2) + 'px';
+      rightlab.style.transform = 'translateX(-50%)';
+      rightlab.style.top = (BARH + 56) + 'px';
+    }
+  } else if (s.kind === 'call' || s.kind === 'split') {
+    leftlab.style.display = 'block';
+    leftlab.textContent = 'RANGE  [' + l + '..' + h + ']';
+    leftlab.style.left = ((x1 + x2) / 2) + 'px';
+    leftlab.style.transform = 'translateX(-50%)';
+    leftlab.style.top = (BARH + 56) + 'px';
+  }
+
+  if (s.kind === 'merged' || s.kind === 'done') {
+    chip.style.display = 'block';
+    chip.style.left = (((x1 + x2) / 2)) + 'px';
+    chip.textContent = s.kind === 'done' ? '\u2713 FULLY SORTED' : '\u2713 [' + l + '..' + h + '] SORTED';
+  }
+}
+
+function renderMap() {
+  var s = steps[cur];
+  var host = $('map');
+  host.innerHTML = '';
+  var anc = {};
+  var p = s.node;
+  while (p != null && nodes[p]) { anc[p] = true; p = nodes[p].parent; }
+  levels.forEach(function (row, li) {
+    var rowEl = document.createElement('div');
+    rowEl.className = 'map-row';
+    var lab = document.createElement('div');
+    lab.className = 'map-lab';
+    lab.textContent = 'L' + li;
+    var strip = document.createElement('div');
+    strip.className = 'map-strip';
+    row.forEach(function (id) {
+      var nd = nodes[id];
+      var g = document.createElement('div');
+      var st = '';
+      if (s.fin.indexOf(id) >= 0) st = 'done';
+      else if (s.node === id) st = 'active';
+      else if (anc[id]) st = 'anc';
+      g.className = 'map-group' + (st ? ' ' + st : '');
+      for (var i = nd.l; i <= nd.h; i++) {
+        var b = document.createElement('div');
+        b.className = 'map-box';
+        b.textContent = s.view[i];
+        g.appendChild(b);
+      }
+      strip.appendChild(g);
+    });
+    rowEl.appendChild(lab); rowEl.appendChild(strip);
+    host.appendChild(rowEl);
+  });
+}
+
+function renderBuffers() {
+  var s = steps[cur];
+  var host = $('buffers');
+  host.innerHTML = '';
+  if (!s.buf) {
+    var ph = document.createElement('span');
+    ph.className = 'buf-placeholder';
+    ph.textContent = 'The two piles appear here during merge steps - leftarray and rightarray with the i / j / k pointers.';
+    host.appendChild(ph);
+    return;
+  }
+  var b = s.buf;
+  function group(label, arrs, ptr, tag, cls) {
+    var g = document.createElement('div'); g.className = 'buf-group';
+    var t = document.createElement('div'); t.className = 'buf-label'; t.textContent = label;
+    var c = document.createElement('div'); c.className = 'buf-chips';
+    for (var p = 0; p < arrs.length; p++) {
+      var d = document.createElement('div');
+      d.className = 'chip ' + cls + (p === ptr ? ' ptr' : '');
+      d.textContent = arrs[p];
+      c.appendChild(d);
+    }
+    var pt = document.createElement('div'); pt.className = 'ptr-tag'; pt.textContent = tag;
+    g.appendChild(t); g.appendChild(c); g.appendChild(pt);
+    return g;
+  }
+  host.appendChild(group('LEFTARRAY', b.left, b.i, b.i < b.left.length ? 'i' : '', 'left'));
+  host.appendChild(group('RIGHTARRAY', b.right, b.j, b.j < b.right.length ? 'j' : '', 'right'));
+  var kg = document.createElement('div'); kg.className = 'buf-group';
+  var kt = document.createElement('div'); kt.className = 'buf-label'; kt.textContent = 'WRITE INTO X[]';
+  var kc = document.createElement('div'); kc.className = 'buf-chips';
+  var kchip = document.createElement('div'); kchip.className = 'kchip'; kchip.textContent = 'k = ' + b.k;
+  kc.appendChild(kchip);
+  kg.appendChild(kt); kg.appendChild(kc);
+  host.appendChild(kg);
+}
+
+function renderOp() {
+  var s = steps[cur];
+  var o = opFor(s);
+  var chip = $('op-chip');
+  chip.textContent = o.chip;
+  chip.className = 'op-chip ' + o.cls;
+  $('op-title').innerHTML = o.title;
+  $('op-sub').textContent = o.sub;
+  $('op-why').innerHTML = '<b>Why?</b> ' + opWhy(s);
+  $('op-card').className = 'card op-card ' + (o.cls === 'ok' ? 'ok' : o.cls === 'plum' ? 'plum' : '');
+  var pill = $('phase-pill');
+  pill.textContent = o.chip;
+  pill.className = 'pill ' + (o.cls || '');
+}
+
+function opFor(s) {
+  var l = s.rng ? s.rng[0] : 0, h = s.rng ? s.rng[1] : 0;
+  switch (s.kind) {
+    case 'init':
+      return { chip: 'READY', cls: 'ok', title: 'The unsorted array',
+        sub: 'Press Play to watch the whole sort - or step one move at a time with Next.' };
+    case 'call':
+      return { chip: 'DIVIDE', cls: 'amber', title: 'Work on [' + l + '..' + h + ']',
+        sub: 'This piece has ' + (h - l + 1) + ' numbers. More than one, so it cannot be sorted yet - split it first.' };
+    case 'split':
+      return { chip: 'DIVIDE', cls: 'amber', title: 'Cut [' + l + '..' + h + '] into two halves',
+        sub: 'Left: [' + l + '..' + s.mid + ']  \u00B7  Right: [' + (s.mid + 1) + '..' + h + ']. Each half will be sorted separately.' };
+    case 'base':
+      return { chip: 'TINY PIECE', cls: 'ok', title: 'x[' + l + '] = ' + s.view[l] + ' - just one number',
+        sub: 'A single number is always "sorted". Nothing to do here.' };
+    case 'buffers':
+      if (s.op2 === 'copy')
+        return { chip: 'MERGE', cls: 'plum', title: 'Take the two sorted piles',
+          sub: 'Left pile: [' + l + '..' + s.mid + ']  \u00B7  Right pile: [' + (s.mid + 1) + '..' + h + ']. Both are already sorted.' };
+      return { chip: 'MERGE', cls: 'plum', title: 'Get ready to weave',
+        sub: 'i points into the left pile  \u00B7  j points into the right pile  \u00B7  k marks where the next value lands.' };
+    case 'compare': {
+      var A = s.buf.left[s.buf.i], B = s.buf.right[s.buf.j], tl = A <= B;
+      return { chip: 'COMPARE', cls: 'amber',
+        title: '<span class="opn a">' + A + '</span><span class="opvs">VS</span><span class="opn b">' + B + '</span>',
+        sub: A + (tl ? ' \u2264 ' : ' > ') + B + '  \u2192  take ' + (tl ? A + ' from the LEFT pile' : B + ' from the RIGHT pile') + '.' };
+    }
+    case 'write':
+      return { chip: 'PLACE', cls: 'plum', title: 'x[' + s.writeIdx + '] = <span class="opn">' + s.view[s.writeIdx] + '</span>',
+        sub: 'The winning value is written into the array' + (s.src === 'L' ? ' - i moves forward.' : ' - j moves forward.') };
+    case 'copy':
+      return { chip: 'COPY REST', cls: 'plum', title: 'x[' + s.writeIdx + '] = <span class="opn">' + s.view[s.writeIdx] + '</span>',
+        sub: 'One pile is empty - copy what is left of the other pile straight across.' };
+    case 'merged':
+      return { chip: 'SORTED \u2713', cls: 'ok', title: '[' + l + '..' + h + '] is now sorted',
+        sub: 'Result: ' + s.view.slice(l, h + 1).join(', ') + (h - l + 1 === s.view.length ? ' - that is the whole array!' : ' - handed back up to be merged with its neighbour.') };
+    case 'done':
+      return { chip: 'FINISHED', cls: 'ok', title: 'The array is fully sorted',
+        sub: 'Sorted in ' + s.comp + ' comparisons. Green bars = sorted.' };
+  }
+  return { chip: '', cls: '', title: '', sub: '' };
+}
+
+function opWhy(s) {
+  switch (s.kind) {
+    case 'init':
+      return 'Merge sort never sorts the whole list in one go. It first <b>cuts the list into tiny pieces</b> - which are trivial to sort - and then <b>merges the pieces back together</b> in order. Press Play to watch it happen.';
+    case 'call':
+      return 'Sorting starts from the top: look at the piece, and if it still holds several numbers, hand its halves to the same procedure. This "sort by calling yourself on smaller pieces" is called <b>recursion</b>.';
+    case 'split':
+      return 'Two half-size problems are much easier than one big one - and the pieces keep halving until a piece holds a single number, which needs <b>no sorting at all</b>. That is the DIVIDE half of divide and conquer.';
+    case 'base':
+      return 'This is the bottom of the recursion: one number cannot be out of order with itself, so the piece is already sorted and is returned <b>unchanged</b>.';
+    case 'buffers':
+      if (s.op2 === 'copy')
+        return 'Each half was sorted by a smaller job a moment ago. We copy them out so we can <b>weave them together</b> without overwriting values we still need.';
+      return 'Picture two sorted piles of cards face-up: <b>i</b> and <b>j</b> point at each pile\'s top card, <b>k</b> marks where the next card lands in the array.';
+    case 'compare':
+      return 'Both piles are sorted, so each pile\'s front value is its <b>smallest</b>. The smaller of the two fronts must therefore be the next smallest overall - so it wins. This one comparison is the entire trick of merge sort.';
+    case 'write':
+      return 'The winner was proven smallest, so it belongs exactly at position ' + s.writeIdx + '. Its pile advances one card, and <b>k</b> moves to the next empty slot.';
+    case 'copy':
+      return 'When one pile runs out, everything left in the other pile is <b>already bigger</b> than everything placed and already in order - so it is copied across with no more comparisons.';
+    case 'merged':
+      return 'Two sorted halves were woven into one sorted piece by repeatedly taking the smaller front value. The piece goes <b>back up</b> to be merged with its neighbour, over and over, until one piece remains.';
+    case 'done':
+      return 'Every merge turned sorted pieces into bigger sorted pieces, so the whole array ends up sorted. That is divide and conquer: <b>split until trivial, merge until done</b>.';
+  }
+  return '';
+}
+
+function renderCode() {
+  var s = steps[cur];
+  var all = document.querySelectorAll('#code-ms .cl, #code-m .cl');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('hl');
+  if (s.code !== null && s.code !== undefined) {
+    var e1 = $('cl-ms-' + s.code);
+    if (e1) e1.classList.add('hl');
+  }
+  if (s.code2 !== null && s.code2 !== undefined) {
+    var e2 = $('cl-m-' + s.code2);
+    if (e2) e2.classList.add('hl');
+  }
+}
+
+function renderStats() {
+  var s = steps[cur];
+  $('st-comp').textContent = s.comp;
+  $('st-depth').textContent = s.depth;
+  $('st-maxdepth').textContent = s.maxDepth;
+  $('st-size').textContent = s.view.length;
+}
+
+function renderLog() {
+  var host = $('log');
+  host.innerHTML = '';
+  for (var i = 0; i < steps.length; i++) {
+    var st = steps[i];
+    var e = document.createElement('div');
+    e.className = 'log-e ' + (TONE[st.kind] || '') + (i === cur ? ' cur' : '');
+    e.setAttribute('data-step', i);
+    var ic = document.createElement('span');
+    ic.className = 'ic';
+    ic.textContent = ICONS[st.kind] || '\u2022';
+    var n = document.createElement('span');
+    n.className = 'n';
+    n.textContent = i;
+    e.appendChild(ic); e.appendChild(n);
+    e.appendChild(document.createTextNode(st.short));
+    host.appendChild(e);
+  }
+  var c = host.querySelector('.cur');
+  if (c) {
+    var want = c.offsetTop - host.clientHeight / 2 + c.offsetHeight / 2;
+    host.scrollTop = Math.max(0, want);
+  }
+}
+
+function renderJourney() {
+  var last = steps.length - 1;
+  var f = $('jfill');
+  if (f) f.style.width = (last ? (cur / last) * 100 : 0) + '%';
+}
+
+function renderAll() {
+  renderBars();
+  renderStageOverlays();
+  renderMap();
+  renderBuffers();
+  renderOp();
+  renderCode();
+  renderStats();
+  renderLog();
+  renderJourney();
+  syncControls();
+}
+
+/* ============================= controls ============================= */
+function intervalMs() { return BASE_MS / SPEEDS[$('speed').value - 1]; }
+
+function syncControls() {
+  var last = steps.length - 1;
+  $('scrubber').max = last;
+  $('scrubber').value = cur;
+  $('step-label').textContent = 'Step ' + cur + ' / ' + last;
+  $('btn-back').disabled = cur === 0;
+  $('btn-fwd').disabled = cur === last;
+}
+
+function setStep(t) {
+  cur = Math.max(0, Math.min(steps.length - 1, t));
+  renderAll();
+  if (playing && cur === steps.length - 1) pause();
+}
+
+function stepFwd() { setStep(cur + 1); }
+function stepBack() { setStep(cur - 1); }
+
+function play() {
+  if (cur >= steps.length - 1) cur = 0;
+  playing = true;
+  $('btn-play').innerHTML = '&#10074;&#10074; Pause';
+  schedule();
+}
+
+function schedule() {
+  clearTimeout(timer);
+  var hold = (steps[cur].kind === 'merged' || steps[cur].kind === 'done') ? 2.4 : 1;
+  timer = setTimeout(function () {
+    if (cur >= steps.length - 1) { pause(); return; }
+    setStep(cur + 1);
+    if (playing) schedule();
+  }, intervalMs() * hold);
+}
+
+function pause() {
+  playing = false;
+  clearTimeout(timer);
+  $('btn-play').innerHTML = '&#9654; Play';
+}
+
+function togglePlay() { playing ? pause() : play(); }
+function restartTimer() { if (playing) schedule(); }
+
+/* --------------------------- array input --------------------------- */
+function parseArray(text) {
+  var parts = text.split(/[,\s]+/).filter(function (p) { return p.length; });
+  if (parts.length < 2) throw 'Enter at least 2 numbers, separated by commas.';
+  if (parts.length > 15) throw 'Keep it to 15 elements max so every step stays readable.';
+  var out = [];
+  for (var i = 0; i < parts.length; i++) {
+    var v = Number(parts[i]);
+    if (!isFinite(v) || Math.floor(v) !== v) throw '"' + parts[i] + '" is not a whole number.';
+    if (v < 0 || v > 99) throw 'Use whole numbers from 0 to 99 (got ' + parts[i] + ').';
+    out.push(v);
+  }
+  return out;
+}
+
+function showError(msg) { $('input-error').textContent = msg || ''; }
+
+function build(text) {
+  try {
+    var arr = parseArray(text);
+    showError('');
+    pause();
+    buildTrace(arr);
+    buildBars(arr.length);
+    buildOverlays();
+    buildJourney();
+    cur = 0;
+    renderAll();
+  } catch (e) {
+    showError(String(e));
+  }
+}
+
+/* ============================== wiring ============================== */
+$('btn-play').addEventListener('click', togglePlay);
+$('btn-fwd').addEventListener('click', function () { pause(); stepFwd(); });
+$('btn-end').addEventListener('click', function () { pause(); setStep(steps.length - 1); });
+$('btn-back').addEventListener('click', function () { pause(); stepBack(); });
+$('btn-details').addEventListener('click', function () {
+  var det = $('details');
+  det.classList.toggle('hidden');
+  this.textContent = det.classList.contains('hidden') ? '\uD83D\uDD0D Show details' : '\uD83D\uDD0D Hide details';
+});
+$('speed').addEventListener('input', function () {
+  var v = SPEEDS[$('speed').value - 1];
+  $('speed-label').textContent = (v % 1 === 0 ? v : v.toFixed(2).replace(/0$/, '').replace(/\.$/, '')) + '\u00d7';
+  restartTimer();
+});
+$('speed-label').textContent = SPEEDS[$('speed').value - 1] + '\u00d7';
+$('scrubber').addEventListener('input', function () { pause(); setStep(+$('scrubber').value); });
+$('btn-build').addEventListener('click', function () { build($('array-input').value); });
+$('btn-random').addEventListener('click', function () {
+  var n = 8 + Math.floor(Math.random() * 4);
+  var vals = [];
+  for (var i = 0; i < n; i++) vals.push(5 + Math.floor(Math.random() * 95));
+  $('array-input').value = vals.join(', ');
+  build($('array-input').value);
+});
+$('btn-reset').addEventListener('click', function () { build($('array-input').value); });
+$('array-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') build($('array-input').value); });
+$('btn-intro-go').addEventListener('click', function () {
+  var ov = $('intro-overlay');
+  ov.style.opacity = '0';
+  ov.style.transition = 'opacity .3s';
+  setTimeout(function () { ov.remove(); }, 320);
+});
+$('log').addEventListener('click', function (e) {
+  var t = e.target;
+  while (t && t !== $('log') && !(t.getAttribute && t.getAttribute('data-step'))) t = t.parentNode;
+  var s = t && t.getAttribute ? t.getAttribute('data-step') : null;
+  if (s) { pause(); setStep(+s); }
+});
+document.addEventListener('keydown', function (e) {
+  var t = e.target, tag = t ? t.tagName : '';
+  var isText = tag === 'INPUT' && t.type === 'text';
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    if (isText || tag === 'BUTTON') return;
+    e.preventDefault(); togglePlay(); return;
+  }
+  if (tag === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); stepFwd(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); stepBack(); }
+});
+window.addEventListener('resize', function () { if (steps.length) renderAll(); });
+
+buildCodePanels();
+build($('array-input').value);
+</script>
+</body>
+</html>
